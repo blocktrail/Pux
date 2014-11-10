@@ -123,4 +123,38 @@ $#xs');
         $r = $mux->dispatch('/test/hello/static');
         $this->assertNonPcreRoute($r, '/test/hello/static');
     }
+
+    public function testSubmuxPcreMount() {
+        $mux = new \Pux\Mux;
+        ok($mux);
+        is(0, $mux->length());
+
+        $submux = new \Pux\Mux;
+        $submux->any('/hello/:name', array( 'HelloController2','indexAction' ));
+        ok($submux);
+        ok($routes = $submux->getRoutes());
+        is(1, $submux->length());
+        is(0, $mux->length());
+        $mux->mount( '/sub/:country' , $submux);
+        $r = $mux->dispatch('/sub/UK/hello/John');
+        ok($r);
+        $this->assertPcreRoute($r, '/sub/:country/hello/:name');
+    }
+
+    public function testSubmuxPcreMountStaticSub() {
+        $mux = new \Pux\Mux;
+        ok($mux);
+        is(0, $mux->length());
+
+        $submux = new \Pux\Mux;
+        $submux->any('/hello/there', array( 'HelloController2','indexAction' ));
+        ok($submux);
+        ok($routes = $submux->getRoutes());
+        is(1, $submux->length());
+        is(0, $mux->length());
+        $mux->mount( '/sub/:country' , $submux);
+        $r = $mux->dispatch('/sub/UK/hello/there');
+        ok($r);
+        $this->assertPcreRoute($r, '/sub/:country/hello/there');
+    }
 }
