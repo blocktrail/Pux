@@ -256,7 +256,9 @@ class Mux
 
     public function match($path) {
         $reqmethod = self::getRequestMethodConstant(@$_SERVER['REQUEST_METHOD']);
-
+        //strip port from host
+        $host = preg_replace('/:\d+$/', '', $_SERVER["HTTP_HOST"]);
+        
         foreach( $this->routes as $route ) {
             if ( $route[0] ) {
                 if ( ! preg_match($route[1], $path , $regs ) ) {
@@ -267,7 +269,7 @@ class Mux
                 // validate request method
                 if ( isset($route[3]['method']) && $route[3]['method'] != $reqmethod )
                     continue;
-                if ( isset($route[3]['domain']) && $route[3]['domain'] != $_SERVER["HTTP_HOST"] )
+                if ( isset($route[3]['domain']) && $route[3]['domain'] != $host )
                     continue;
                 if ( isset($route[3]['secure']) && $route[3]['secure'] && $_SERVER["HTTPS"] )
                     continue;
@@ -278,7 +280,7 @@ class Mux
                     // validate request method
                     if ( isset($route[3]['method']) && $route[3]['method'] != $reqmethod )
                         continue;
-                    if ( isset($route[3]['domain']) && $route[3]['domain'] != $_SERVER["HTTP_HOST"] )
+                    if ( isset($route[3]['domain']) && $route[3]['domain'] != $host )
                         continue;
                     if ( isset($route[3]['secure']) && $route[3]['secure'] && $_SERVER["HTTPS"] )
                         continue;
