@@ -24,6 +24,12 @@ class Mux
 
     public $id;
 
+    private $options = [];
+
+    public function __construct(array $options = []) {
+        $this->options = array_replace_recursive($this->options, $options);
+    }
+
 
     /**
      * When expand is enabled, all mounted Mux will expand the routes to the parent mux.
@@ -80,15 +86,14 @@ class Mux
                 // process for pcre
                 if ( $route[0] || $pcre ) {
                     $newPattern = $pattern . ( $route[0] ? $route[3]['pattern'] : $route[1] );
-                    $routeArgs = PatternCompiler::compile($newPattern,
-                        array_replace_recursive($options, $route[3]) );
+                    $routeArgs = PatternCompiler::compile($newPattern, array_replace_recursive($this->options, $options, isset($route[3]) ? $route[3] : []) );
                     $this->appendPCRERoute( $routeArgs, $route[2] );
                 } else {
                     $this->routes[] = array(
                         false,
                         $pattern . $route[1],
                         $route[2],
-                        isset($route[3]) ? array_replace_recursive($options, $route[3]) : $options,
+                        array_replace_recursive($this->options, $options, isset($route[3]) ? $route[3] : []),
                     );
                 }
             }
@@ -152,6 +157,8 @@ class Mux
         if ( is_string($callback) && strpos($callback,':') !== false ) {
             $callback = explode(':', $callback);
         }
+
+        $options = array_replace_recursive($this->options, $options);
 
         // compile place holder to patterns
         $pcre = strpos($pattern,':') !== false;
